@@ -4,14 +4,14 @@ import './index.css';
 
 import database from './db.json';
 
-class FilmForm extends React.Component {
+class Form extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "",
-            films: [],
-            list: 'films',
-            submitted: false
+            value: '',
+            options: [],
+            submitted: false,
+            doesValueExist: false
         };
 
         this.onChange = this.onChange.bind(this);
@@ -21,10 +21,9 @@ class FilmForm extends React.Component {
     onChange(event) {
         let val = event.target.value;
         this.setState({
-            title: val,
-            films: getFilmsList(val),
-            submitted: false,
-            doesTitleExist: false
+            value: val,
+            options: getOptionsList(val),
+            submitted: false
         });
     }
 
@@ -37,74 +36,74 @@ class FilmForm extends React.Component {
         event.preventDefault();
         this.setState({
             submitted: true,
-            doesTitleExist: this.state.films.length > 0 ? this.state.films[0].title.toLowerCase().localeCompare(this.state.title.toLowerCase()) === 0 : false
+            doesValueExist: this.state.options.length > 0 ? this.state.options[0].title.toLowerCase().localeCompare(this.state.value.toLowerCase()) === 0 : false
         });
     }
 
 
     render() {
         return (
-            <form className='film-form' onSubmit={this.handleSubmit}>
+            <form className='form' onSubmit={this.handleSubmit}>
                 <label>Название фильма:</label><br/>
-                <input type='text' value={this.state.title} list={this.state.list} onChange={this.onChange}/>
-                <FilmOptionList id={this.state.list} films={this.state.films}/>
-                <FilmInfo submitted={this.state.submitted}
-                          film={this.state.doesTitleExist > 0 ? this.state.films[0] : null}/>
+                <input type='text' value={this.state.value} list={this.props.listName} onChange={this.onChange}/>
+                <OptionList id={this.props.listName} options={this.state.options}/>
+                <Info submitted={this.state.submitted}
+                          item={this.state.doesValueExist > 0 ? this.state.options[0] : null}/>
             </form>
         );
     }
 }
 
-class FilmOptionList extends React.Component {
+class OptionList extends React.Component {
     render() {
         return (
             <datalist id={this.props.id}>
-                {this.props.films.map((film) => <option key={film.id} value={film.title}></option>)}
+                {this.props.options.map((item) => <option key={item.id} value={item.title}></option>)}
             </datalist>
         );
     }
 }
 
-class FilmInfo extends React.Component {
+class Info extends React.Component {
     render() {
         if (this.props.submitted) {
-            if (this.props.film)
+            if (this.props.item)
                 return (
-                    <div className='film-info'>
-                        <span>Название: {this.props.film.title}</span><br/>
-                        <span>Год: {this.props.film.year}</span><br/>
-                        <span>Режиссёр: {this.props.film.director}</span>
+                    <div className='info'>
+                        <span>Название: {this.props.item.title}</span><br/>
+                        <span>Год: {this.props.item.year}</span><br/>
+                        <span>Режиссёр: {this.props.item.director}</span>
                     </div>
                 );
             else
                 return (
-                    <div className='film-info'>
+                    <div className='nfo'>
                         <span>Не найден такой фильм</span>
                     </div>
                 )
         }
         else
-            return (<div className='film-info'></div>);
+            return (<div className='info'></div>);
     }
 }
 
 
 
-function getFilmsList(part) {
+function getOptionsList(part) {
     //search names in json
     let str = part.toLowerCase();
-    let filteredFilms = [];
-    let films = database.films;
+    let filteredOptions = [];
+    let items = database.films;
     if (part.length !== 0) {
-        for (let i = 0; i < films.length; i++) {
-            if (films[i].title.toLowerCase().indexOf(str) === 0)
-                filteredFilms.push(films[i]);
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].title.toLowerCase().indexOf(str) === 0)
+                filteredOptions.push(items[i]);
         }
     }
 
-    return filteredFilms;
+    return filteredOptions;
 }
 
 ReactDOM.render(
-    <FilmForm/>, document.getElementById('root')
+    <Form listName='films'/>, document.getElementById('root')
 );
