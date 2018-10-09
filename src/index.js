@@ -5,12 +5,17 @@ import './index.css';
 import database from './db.json';
 
 class Form extends React.Component {
+    //компонент, возвращающий форму с автодополнением
+    //state.value -- содержимое поля ввода
+    //state.options -- список предложенных фильмов
+    //state.isSubmitted -- флаг подтверждения введенных данных
+    //state.doesValueExist -- флаг наличия фильма с названием из поля state.value в базе данных
     constructor(props) {
         super(props);
         this.state = {
             value: '',
             options: [],
-            submitted: false,
+            isSubmitted: false,
             doesValueExist: false
         };
 
@@ -19,27 +24,29 @@ class Form extends React.Component {
     }
 
     onChange(event) {
+        //обработка изменений содержимого поля ввода
         let val = event.target.value;
         this.setState({
             value: val,
             options: getOptionsList(val),
-            submitted: false
+            isSubmitted: false
         });
     }
 
     keyPress(event) {
-        if (event.keyCode === 13)
+        //подтверждение данных формы нажатию клавиши enter
+        if (event.keyCode === 13) //код клавиши enter -- 13
             this.handleSubmit(event);
     }
 
     handleSubmit(event) {
+        //обработка принятых данных формы
         event.preventDefault();
         this.setState({
-            submitted: true,
+            isSubmitted: true,
             doesValueExist: this.state.options.length > 0 ? this.state.options[0].title.toLowerCase().localeCompare(this.state.value.toLowerCase()) === 0 : false
         });
     }
-
 
     render() {
         return (
@@ -47,7 +54,7 @@ class Form extends React.Component {
                 <label>Название фильма:</label><br/>
                 <input type='text' value={this.state.value} list={this.props.listName} onChange={this.onChange}/>
                 <OptionList id={this.props.listName} options={this.state.options}/>
-                <Info submitted={this.state.submitted}
+                <Info isSubmitted={this.state.isSubmitted}
                           item={this.state.doesValueExist > 0 ? this.state.options[0] : null}/>
             </form>
         );
@@ -55,6 +62,9 @@ class Form extends React.Component {
 }
 
 class OptionList extends React.Component {
+    //компонент, отвечающий за отрисовку ниспадающего списка предложенных вариантов названий
+    //props.id -- идентификатор списка (совпадает с атрибутом list у соответствующего тега input
+    //props.options -- массив фильмов, которые нужно отобразить в списке
     render() {
         return (
             <datalist id={this.props.id}>
@@ -65,8 +75,11 @@ class OptionList extends React.Component {
 }
 
 class Info extends React.Component {
+    //компонент, отвечающий за отображение информации о выбранном фильме
+    //props.isSubmitted -- true, если был submit и не было изменений поля ввода после этого, иначе false
+    //props.item -- ссылка на выбранный фильм
     render() {
-        if (this.props.submitted) {
+        if (this.props.isSubmitted) {
             if (this.props.item)
                 return (
                     <div className='info'>
@@ -76,21 +89,22 @@ class Info extends React.Component {
                     </div>
                 );
             else
+                //props.item == null, если фильма с выбранным названием нет в базе данных
                 return (
-                    <div className='nfo'>
+                    <div className='info'>
                         <span>Не найден такой фильм</span>
                     </div>
                 )
         }
         else
+            //если не было submit, возвращается пустой div
             return (<div className='info'></div>);
     }
 }
 
-
-
 function getOptionsList(part) {
-    //search names in json
+    //part -- содержимое поля ввода (должно совпадать с началом названия фильма)
+    //функция фильтрует названия фильмов и возвращает массив подходящих фильмов
     let str = part.toLowerCase();
     let filteredOptions = [];
     let items = database.films;
@@ -100,10 +114,10 @@ function getOptionsList(part) {
                 filteredOptions.push(items[i]);
         }
     }
-
     return filteredOptions;
 }
 
 ReactDOM.render(
+    //отрисовка формы с автодополнением в основном html-документе
     <Form listName='films'/>, document.getElementById('root')
 );
