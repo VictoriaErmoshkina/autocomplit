@@ -26,11 +26,21 @@ class Form extends React.Component {
     onChange(event) {
         //обработка изменений содержимого поля ввода
         let val = event.target.value;
-        this.setState({
-            value: val,
-            options: getOptionsList(val),
-            isSubmitted: false
-        });
+        let item = getItem(val);
+        if (item) {
+            event.target.value = item.title;
+            this.setState({
+                value: item.title,
+                options: [item],
+                isSubmitted: false
+            });
+        } else {
+            this.setState({
+                value: val,
+                options: getOptionsList(val),
+                isSubmitted: false
+            });
+        }
     }
 
     keyPress(event) {
@@ -55,7 +65,7 @@ class Form extends React.Component {
                 <input type='text' value={this.state.value} list={this.props.listName} onChange={this.onChange}/>
                 <OptionList id={this.props.listName} options={this.state.options}/>
                 <Info isSubmitted={this.state.isSubmitted}
-                          item={this.state.doesValueExist > 0 ? this.state.options[0] : null}/>
+                      item={this.state.doesValueExist > 0 ? this.state.options[0] : null}/>
             </form>
         );
     }
@@ -65,10 +75,12 @@ class OptionList extends React.Component {
     //компонент, отвечающий за отрисовку ниспадающего списка предложенных вариантов названий
     //props.id -- идентификатор списка (совпадает с атрибутом list у соответствующего тега input
     //props.options -- массив фильмов, которые нужно отобразить в списке
+
+
     render() {
         return (
             <datalist id={this.props.id}>
-                {this.props.options.map((item) => <option key={item.id} value={item.title}></option>)}
+                {this.props.options.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
             </datalist>
         );
     }
@@ -89,7 +101,7 @@ class Info extends React.Component {
                     </div>
                 );
             else
-                //props.item == null, если фильма с выбранным названием нет в базе данных
+            //props.item == null, если фильма с выбранным названием нет в базе данных
                 return (
                     <div className='info'>
                         <span>Не найден такой фильм</span>
@@ -97,24 +109,33 @@ class Info extends React.Component {
                 )
         }
         else
-            //если не было submit, возвращается пустой div
+        //если не было submit, возвращается пустой div
             return (<div className='info'></div>);
     }
 }
 
 function getOptionsList(part) {
-    //part -- содержимое поля ввода (должно совпадать с началом названия фильма)
+    //part -- содержимое поля ввода (должно содержаться в названии фильма)
     //функция фильтрует названия фильмов и возвращает массив подходящих фильмов
     let str = part.toLowerCase();
     let filteredOptions = [];
     let items = database.films;
     if (part.length !== 0) {
         for (let i = 0; i < items.length; i++) {
-            if (items[i].title.toLowerCase().indexOf(str) === 0)
+            if (items[i].title.toLowerCase().indexOf(str) >= 0)
                 filteredOptions.push(items[i]);
+
         }
     }
     return filteredOptions;
+}
+
+function getItem(id) {
+    let items = database.films;
+    for (let i = 0; i < items.length; i++)
+        if (items[i].id === id)
+            return items[i];
+    return null;
 }
 
 ReactDOM.render(
