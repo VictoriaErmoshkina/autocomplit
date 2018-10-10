@@ -15,6 +15,7 @@ class Form extends React.Component {
         this.state = {
             value: '',
             options: [],
+            selectedItem: null,
             isSubmitted: false,
             doesValueExist: false
         };
@@ -31,12 +32,14 @@ class Form extends React.Component {
             event.target.value = item.title;
             this.setState({
                 value: item.title,
-                options: [item],
+                selectedItem: item,
+                options: getOptionsList(item.title),
                 isSubmitted: false
             });
         } else {
             this.setState({
                 value: val,
+                selectedItem: null,
                 options: getOptionsList(val),
                 isSubmitted: false
             });
@@ -65,7 +68,7 @@ class Form extends React.Component {
                 <input type='text' value={this.state.value} list={this.props.listName} onChange={this.onChange}/>
                 <OptionList id={this.props.listName} options={this.state.options}/>
                 <Info isSubmitted={this.state.isSubmitted}
-                      item={this.state.doesValueExist > 0 ? this.state.options[0] : null}/>
+                      item={this.state.selectedItem ? this.state.selectedItem : (this.state.doesValueExist > 0 ? this.state.options[0] : null)}/>
             </form>
         );
     }
