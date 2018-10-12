@@ -6,6 +6,7 @@
     "axios": "^0.18.0",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
+    "react-onclickoutside": "^6.7.1",
     "react-scripts": "2.0.4",
     "whatwg-fetch": "^3.0.0"
   },
@@ -23,5 +24,8 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "devDependencies": {
+    "css-loader": "^1.0.0"
+  }
 }
