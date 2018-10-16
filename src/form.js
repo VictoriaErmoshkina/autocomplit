@@ -1,7 +1,8 @@
 import React from 'react';
 import './index.css';
 import onClickOutside from 'react-onclickoutside';
-import database from './db.json';
+
+let films;
 
 class Form extends React.Component {
     //компонент, возвращающий форму с автодополнением
@@ -30,6 +31,22 @@ class Form extends React.Component {
         this.onFocus = this.onFocus.bind(this);
         this.OptionList = this.OptionList.bind(this);
         this.FormContent = this.FormContent.bind(this);
+    }
+
+    componentDidMount(){
+        const url = 'http://localhost:3001/films';
+        window.fetch(url, {
+            method: 'GET'
+        })
+            .then(function (response) {
+                return response.json();
+            }).then(function (json) {
+            films = json;
+            console.log(films);
+        }).catch(function (ex) {
+            console.log('parsing failed', ex);
+            console.log('Соединение с сервером не установлено');
+        });
     }
 
 
@@ -142,9 +159,9 @@ class Form extends React.Component {
         return (
             <ol className='option-list'>
                 {this.state.options.map((item) =>
-                    <li onClick={this.onClick} key={item.id} onMouseOver={this.onMouseOver}
+                    <li onClick={this.onClick} key={item._id} onMouseOver={this.onMouseOver}
                         className={getOptionClassName(item, this.state.options, this.state.indexOfMarked)}
-                        id={item.id}>{item.title}</li>
+                        id={item._id}>{item.title}</li>
                 )}
             </ol>
         );
@@ -203,23 +220,26 @@ function Info(props) {
 function getOptionsList(part) {
     //part -- содержимое поля ввода (должно содержаться в названии фильма)
     //функция фильтрует названия фильмов и возвращает массив подходящих фильмов
-    let str = part.toString().toLowerCase();
-    let filteredOptions = [];
-    let items = database.films;
-    if (part.length !== 0) {
-        for (let i = 0; i < items.length; i++) {
-            if (items[i].title.toLowerCase().indexOf(str) >= 0)
-                filteredOptions.push(items[i]);
+    if (films) {
+        let str = part.toString().toLowerCase();
+        let filteredOptions = [];
+        let items = films;
+        if (part.length !== 0) {
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].title.toLowerCase().indexOf(str) >= 0)
+                    filteredOptions.push(items[i]);
 
+            }
         }
+        return filteredOptions;
     }
-    return filteredOptions;
+    return [];
 }
 
 function getIndexOfElement(id, options) {
     //получение индекса элемента с заданным id в массиве options
     for (let i = 0; i < options.length; i++) {
-        if (options[i].id === id)
+        if (options[i]._id === id)
             return i;
     }
     return -1;
@@ -227,26 +247,30 @@ function getIndexOfElement(id, options) {
 
 function getItemById(id) {
     //получение элемента из базы данных по id
-    let items = database.films;
-    for (let i = 0; i < items.length; i++)
-        if (items[i].id === id)
-            return items[i];
+    if (films) {
+        let items = films;
+        for (let i = 0; i < items.length; i++)
+            if (items[i]._id === id)
+                return items[i];
+    }
     return null;
 }
 
 function getItemByTitle(name) {
     //получение элемента из базы данных по названию
-    let items = database.films;
-    for (let i = 0; i < items.length; i++)
-        if (items[i].title.toLowerCase().localeCompare(name.toLowerCase()) === 0)
-            return items[i];
+    if (films) {
+        let items = films;
+        for (let i = 0; i < items.length; i++)
+            if (items[i].title.toLowerCase().localeCompare(name.toLowerCase()) === 0)
+                return items[i];
+    }
     return null;
 }
 
 function getOptionClassName(item, options, index) {
     //получения названия класса для элемента списка вариантов
     if (index >= 0 && index < options.length)
-        if (item.id === options[index].id)
+        if (item._id === options[index]._id)
             return 'option-marked';
     return 'option';
 }
